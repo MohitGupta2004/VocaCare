@@ -27,7 +27,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:8000",
         "https://major-4w34.onrender.com",
-        "https://vocacare.vercel.app"
+        "https://major-nine-gamma.vercel.app/"
     ],
     allow_credentials=False,  # Set to False to allow more flexibility
     allow_methods=["*"],
