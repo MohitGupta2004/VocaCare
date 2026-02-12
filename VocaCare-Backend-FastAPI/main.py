@@ -14,7 +14,7 @@ app = FastAPI(title="VocaCare Backend API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "*"
+        "https://major-nine-gamma.vercel.app/"
     ],
     allow_credentials=False,  # Set to False to allow more flexibility
     allow_methods=["*"],
