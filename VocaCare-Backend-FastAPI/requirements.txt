@@ -1,12 +1,5 @@
 fastapi
 uvicorn[standard]
 python-dotenv
-pymongo
-pydantic
-requests
 motor
-# livekit
-# livekit-agents
-# livekit-plugins-openai
-# livekit-plugins-deepgram
-# livekit-plugins-silero
+pydantic
