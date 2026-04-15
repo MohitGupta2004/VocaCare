@@ -1,0 +1,393 @@
+INFO:     Will watch for changes in these directories: ['/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [33467] using WatchFiles
+
+🚀  VocaCare Backend v2.1
+📡  Webhook   : http://localhost:8000/webhook/elevenlabs
+🔌  WebSocket : ws://localhost:8000/ws/updates
+🔐  Login     : http://localhost:8000/auth/login
+👨‍⚕️  Dr APIs  : http://localhost:8000/doctor/patients
+🛡️   Admin API : http://localhost:8000/admin/patients
+📊  Swagger   : http://localhost:8000/docs
+💾  MongoDB   : mongodb://localhost:27017  →  medical_records
+
+INFO:     Started server process [33470]
+INFO:     Waiting for application startup.
+21:50:43 | INFO     | database.connection | ✅ MongoDB connected: mongodb://localhost:27017
+21:50:43 | INFO     | database.connection | 📁 Database: medical_records
+21:50:43 | INFO     | services.auth_service | 🔐 Admin exists: admin@vocare.com
+INFO:     Application startup complete.
+21:51:05 | INFO     | routes.auth | 🔑 Login: admin@vocare.com (admin)
+INFO:     127.0.0.1:61750 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61752 - "GET /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61754 - "GET /admin/patients HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 328, in jsonable_encoder
+    data = dict(obj)
+TypeError: 'ObjectId' object is not iterable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 333, in jsonable_encoder
+    data = vars(obj)
+TypeError: vars() argument must have __dict__ attribute
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 695, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 317, in serialize_response
+    return jsonable_encoder(response_content)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 289, in jsonable_encoder
+    encoded_value = jsonable_encoder(
+        value,
+    ...<4 lines>...
+        sqlalchemy_safe=sqlalchemy_safe,
+    )
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 303, in jsonable_encoder
+    jsonable_encoder(
+    ~~~~~~~~~~~~~~~~^
+        item,
+        ^^^^^
+    ...<7 lines>...
+        sqlalchemy_safe=sqlalchemy_safe,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 289, in jsonable_encoder
+    encoded_value = jsonable_encoder(
+        value,
+    ...<4 lines>...
+        sqlalchemy_safe=sqlalchemy_safe,
+    )
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 336, in jsonable_encoder
+    raise ValueError(errors) from e
+ValueError: [TypeError("'ObjectId' object is not iterable"), TypeError('vars() argument must have __dict__ attribute')]
+21:51:30 | INFO     | routes.auth | 🔑 Login: admin@vocare.com (admin)
+INFO:     127.0.0.1:61761 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61763 - "GET /admin/patients HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 328, in jsonable_encoder
+    data = dict(obj)
+TypeError: 'ObjectId' object is not iterable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 333, in jsonable_encoder
+    data = vars(obj)
+TypeError: vars() argument must have __dict__ attribute
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 695, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/routing.py", line 317, in serialize_response
+    return jsonable_encoder(response_content)
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 289, in jsonable_encoder
+    encoded_value = jsonable_encoder(
+        value,
+    ...<4 lines>...
+        sqlalchemy_safe=sqlalchemy_safe,
+    )
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 303, in jsonable_encoder
+    jsonable_encoder(
+    ~~~~~~~~~~~~~~~~^
+        item,
+        ^^^^^
+    ...<7 lines>...
+        sqlalchemy_safe=sqlalchemy_safe,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 289, in jsonable_encoder
+    encoded_value = jsonable_encoder(
+        value,
+    ...<4 lines>...
+        sqlalchemy_safe=sqlalchemy_safe,
+    )
+  File "/Users/mohitgupta/Documents/Major 2/Major/VocaCare-Backend-FastAPI/venv/lib/python3.14/site-packages/fastapi/encoders.py", line 336, in jsonable_encoder
+    raise ValueError(errors) from e
+ValueError: [TypeError("'ObjectId' object is not iterable"), TypeError('vars() argument must have __dict__ attribute')]
+21:52:04 | INFO     | watchfiles.main | 1 change detected
+WARNING:  WatchFiles detected changes in 'services/patient_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+21:52:04 | INFO     | database.connection | 👋 MongoDB connection closed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33470]
+INFO:     Started server process [33500]
+INFO:     Waiting for application startup.
+21:52:05 | INFO     | database.connection | ✅ MongoDB connected: mongodb://localhost:27017
+21:52:05 | INFO     | database.connection | 📁 Database: medical_records
+21:52:05 | INFO     | services.auth_service | 🔐 Admin exists: admin@vocare.com
+INFO:     Application startup complete.
+21:52:05 | INFO     | watchfiles.main | 3 changes detected
+21:52:19 | INFO     | routes.auth | 🔑 Login: admin@vocare.com (admin)
+INFO:     127.0.0.1:61776 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61778 - "GET /admin/patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "OPTIONS /auth/login HTTP/1.1" 200 OK
+21:54:01 | INFO     | routes.auth | 🔑 Login: admin@vocare.com (admin)
+INFO:     127.0.0.1:61818 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "OPTIONS /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61820 - "OPTIONS /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61822 - "WebSocket /ws/updates" [accepted]
+21:54:01 | INFO     | routes.websocket | 🔌 WS client connected  | total: 1
+INFO:     127.0.0.1:61818 - "OPTIONS /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61825 - "OPTIONS /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     connection closed
+21:54:01 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 0
+INFO:     127.0.0.1:61828 - "OPTIONS /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61830 - "OPTIONS /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61825 - "GET /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61827 - "GET /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61825 - "GET /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "GET /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61820 - "GET /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61827 - "GET /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "GET /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61835 - "WebSocket /ws/updates" [accepted]
+21:54:01 | INFO     | routes.websocket | 🔌 WS client connected  | total: 1
+INFO:     connection open
+INFO:     127.0.0.1:61820 - "GET /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61837 - "WebSocket /ws/updates" [accepted]
+21:54:03 | INFO     | routes.websocket | 🔌 WS client connected  | total: 2
+INFO:     connection open
+INFO:     127.0.0.1:61840 - "OPTIONS /admin/patient/69de8899d04b4491c472f947/assign-doctor HTTP/1.1" 200 OK
+21:54:17 | INFO     | routes.admin | 👩‍⚕️ Doctor dr.sharma@hospital.com assigned to patient 69de8899d04b4491c472f947
+INFO:     127.0.0.1:61840 - "PUT /admin/patient/69de8899d04b4491c472f947/assign-doctor HTTP/1.1" 200 OK
+21:57:02 | INFO     | watchfiles.main | 1 change detected
+WARNING:  WatchFiles detected changes in 'routes/webhook.py'. Reloading...
+INFO:     Shutting down
+21:57:02 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 1
+21:57:02 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 0
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+21:57:02 | INFO     | database.connection | 👋 MongoDB connection closed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33500]
+INFO:     Started server process [33598]
+INFO:     Waiting for application startup.
+21:57:03 | INFO     | database.connection | ✅ MongoDB connected: mongodb://localhost:27017
+21:57:03 | INFO     | database.connection | 📁 Database: medical_records
+21:57:03 | INFO     | services.auth_service | 🔐 Admin exists: admin@vocare.com
+INFO:     Application startup complete.
+21:57:03 | INFO     | watchfiles.main | 3 changes detected
+INFO:     127.0.0.1:61875 - "WebSocket /ws/updates" [accepted]
+21:57:04 | INFO     | routes.websocket | 🔌 WS client connected  | total: 1
+INFO:     connection open
+INFO:     127.0.0.1:61877 - "WebSocket /ws/updates" [accepted]
+21:57:04 | INFO     | routes.websocket | 🔌 WS client connected  | total: 2
+INFO:     connection open
+21:57:20 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 1
+INFO:     connection closed
+INFO:     127.0.0.1:61885 - "WebSocket /ws/updates" [accepted]
+21:57:20 | INFO     | routes.websocket | 🔌 WS client connected  | total: 2
+INFO:     connection open
+INFO:     127.0.0.1:61891 - "GET /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61889 - "GET /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61892 - "GET /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61887 - "GET /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61897 - "WebSocket /ws/updates" [accepted]
+21:57:23 | INFO     | routes.websocket | 🔌 WS client connected  | total: 3
+INFO:     connection open
+21:59:32 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 2
+21:59:32 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 1
+INFO:     connection closed
+21:59:32 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 0
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:62605 - "WebSocket /ws/updates" [accepted]
+22:41:37 | INFO     | routes.websocket | 🔌 WS client connected  | total: 1
+INFO:     connection open
+INFO:     127.0.0.1:62607 - "WebSocket /ws/updates" [accepted]
+22:41:39 | INFO     | routes.websocket | 🔌 WS client connected  | total: 2
+INFO:     connection open
+22:41:57 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 1
+INFO:     connection closed
+INFO:     127.0.0.1:62616 - "WebSocket /ws/updates" [accepted]
+22:42:05 | INFO     | routes.websocket | 🔌 WS client connected  | total: 2
+INFO:     connection open
+INFO:     127.0.0.1:62619 - "WebSocket /ws/updates" [accepted]
+22:42:07 | INFO     | routes.websocket | 🔌 WS client connected  | total: 3
+INFO:     connection open
+22:42:44 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 2
+INFO:     connection closed
+INFO:     127.0.0.1:62650 - "OPTIONS /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62650 - "POST /auth/login HTTP/1.1" 401 Unauthorized
+22:44:06 | INFO     | routes.auth | 🔑 Login: priyamehta.6655@patient.vocare (patient)
+INFO:     127.0.0.1:62652 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62652 - "OPTIONS /api/my-record HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62655 - "OPTIONS /api/my-record HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62652 - "GET /api/my-record HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62652 - "GET /api/my-record HTTP/1.1" 200 OK
+22:47:26 | INFO     | routes.auth | 🔑 Login: admin@vocare.com (admin)
+INFO:     127.0.0.1:62682 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62682 - "OPTIONS /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62684 - "WebSocket /ws/updates" [accepted]
+22:47:26 | INFO     | routes.websocket | 🔌 WS client connected  | total: 3
+INFO:     connection open
+INFO:     127.0.0.1:62682 - "OPTIONS /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62687 - "OPTIONS /admin/patients?limit=200 HTTP/1.1" 200 OK
+22:47:26 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 2
+INFO:     127.0.0.1:62689 - "OPTIONS /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     127.0.0.1:62682 - "OPTIONS /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62692 - "OPTIONS /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62694 - "OPTIONS /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62687 - "GET /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62687 - "GET /admin/doctors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62696 - "WebSocket /ws/updates" [accepted]
+22:47:26 | INFO     | routes.websocket | 🔌 WS client connected  | total: 3
+INFO:     connection open
+INFO:     127.0.0.1:62682 - "GET /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62689 - "GET /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62689 - "GET /admin/patients?limit=200 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62682 - "GET /admin/pending-cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62690 - "GET /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62690 - "GET /admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62698 - "WebSocket /ws/updates" [accepted]
+22:47:28 | INFO     | routes.websocket | 🔌 WS client connected  | total: 4
+INFO:     connection open
+22:48:11 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 3
+INFO:     connection closed
+22:48:30 | INFO     | routes.auth | 🔑 Login: dr.sharma@hospital.com (doctor)
+INFO:     127.0.0.1:62702 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62702 - "OPTIONS /doctor/patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62704 - "WebSocket /ws/updates" [accepted]
+22:48:30 | INFO     | routes.websocket | 🔌 WS client connected  | total: 4
+INFO:     127.0.0.1:62706 - "OPTIONS /doctor/patients HTTP/1.1" 200 OK
+INFO:     connection closed
+22:48:30 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 3
+INFO:     127.0.0.1:62702 - "GET /doctor/patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62702 - "GET /doctor/patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62710 - "WebSocket /ws/updates" [accepted]
+22:48:30 | INFO     | routes.websocket | 🔌 WS client connected  | total: 4
+INFO:     connection open
+INFO:     127.0.0.1:62712 - "WebSocket /ws/updates" [accepted]
+22:48:32 | INFO     | routes.websocket | 🔌 WS client connected  | total: 5
+INFO:     connection open
+INFO:     127.0.0.1:62708 - "OPTIONS /doctor/patient-status HTTP/1.1" 200 OK
+22:48:47 | INFO     | routes.doctor | 🔄 Status → discharged | patient 69df49a5e5a42636e104a602
+INFO:     127.0.0.1:62708 - "PUT /doctor/patient-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62708 - "GET /doctor/patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62715 - "OPTIONS /doctor/prescription HTTP/1.1" 200 OK
+22:49:32 | INFO     | routes.doctor | 💊 Prescription added to patient 69df49a5e5a42636e104a602 by dr.sharma@hospital.com
+INFO:     127.0.0.1:62715 - "POST /doctor/prescription HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62715 - "GET /doctor/patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62718 - "GET /doctor/patients HTTP/1.1" 200 OK
+22:49:59 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 4
+INFO:     connection closed
+22:50:25 | INFO     | routes.auth | 🔑 Login: priyamehta.6655@patient.vocare (patient)
+INFO:     127.0.0.1:62724 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62724 - "GET /api/my-record HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62724 - "GET /api/my-record HTTP/1.1" 200 OK
+22:52:55 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 3
+22:52:55 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 2
+22:52:55 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 1
+22:52:55 | INFO     | routes.websocket | 🔌 WS client disconnected | total: 0
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+23:28:01 | INFO     | watchfiles.main | 1 change detected
