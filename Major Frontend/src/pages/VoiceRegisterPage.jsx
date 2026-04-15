@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { Mic, MicOff, ArrowLeft, Copy, CheckCircle, KeyRound, User } from "lucide-react";
 import { useWebSocket } from "../hooks/useWebSocket";
 
-const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_0201k9as34shfd5807dptt2fsvbb";
+const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_3801kp97hh02fhy8ekve4yxpd0h1";
 
 export default function VoiceRegisterPage() {
   const [showWidget,    setShowWidget]    = useState(false);

@@ -7,7 +7,7 @@ import DashboardHeader from "../components/DashboardHeader";
 import StatusPanel from "../components/StatusPanel";
 import PatientInfo from "../components/PatientInfo";
 
-const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_0201k9as34shfd5807dptt2fsvbb";
+const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_3801kp97hh02fhy8ekve4yxpd0h1";
 
 export default function DashboardPage() {
   const { user }                      = useAuth();
