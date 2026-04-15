@@ -1,7 +1,7 @@
 {
   "name": "major-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
-    "livekit-client": "^2.15.14",
     "lucide-react": "^0.552.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-router-dom": "^7.5.3",
     "tailwindcss": "^4.1.16"
   },
   "devDependencies": {

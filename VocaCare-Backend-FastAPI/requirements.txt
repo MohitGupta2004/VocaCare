@@ -3,3 +3,5 @@ uvicorn[standard]
 python-dotenv
 motor
 pydantic
+python-jose[cryptography]
+bcrypt==4.0.1
