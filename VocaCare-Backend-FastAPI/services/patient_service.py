@@ -208,3 +208,53 @@ async def update_patient_status(db, patient_id: str, status: str) -> bool:
     except Exception as e:
         logger.error(f"update_status error: {e}")
         return False
+
+
+# ---------------------------------------------------------------------------
+# Patient self-update (personal info only)
+# ---------------------------------------------------------------------------
+_EDITABLE_FIELDS = {
+    "name", "age", "gender", "contact", "address",
+    "reason", "medicalHistory", "emergencyContact", "appointmentPreference",
+}
+
+async def update_patient_personal_info(
+    db,
+    patient_id: str,
+    updates: dict,
+    user_email: str | None = None,
+) -> Optional[dict]:
+    """
+    Allow a patient to update their own personal registration fields.
+    Clinical / system fields are blocked via the whitelist.
+    If `name` changes we also sync `full_name` in the linked user document.
+    """
+    safe = {k: v for k, v in updates.items() if k in _EDITABLE_FIELDS}
+    if not safe:
+        return None
+
+    safe["updatedAt"] = datetime.utcnow()
+
+    try:
+        result = await db[PATIENTS_COLLECTION].find_one_and_update(
+            {"_id": ObjectId(patient_id)},
+            {"$set": safe},
+            return_document=True,
+        )
+        if result:
+            result["_id"] = str(result["_id"])
+            if "assigned_doctor_id" in result:
+                result["assigned_doctor_id"] = str(result["assigned_doctor_id"])
+
+        # Sync full_name in the users collection when name changes
+        if user_email and "name" in safe:
+            await db[USERS_COLLECTION].update_one(
+                {"email": user_email},
+                {"$set": {"full_name": safe["name"]}},
+            )
+            logger.info(f"👤 Synced full_name for {user_email} → {safe['name']}")
+
+        return result
+    except Exception as e:
+        logger.error(f"update_patient_personal_info error: {e}")
+        return None
