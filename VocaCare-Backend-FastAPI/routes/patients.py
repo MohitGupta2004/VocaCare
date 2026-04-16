@@ -1,5 +1,7 @@
 """Patient routes — protected by JWT + RBAC."""
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from typing import Optional
 
 from config.settings import PATIENTS_COLLECTION, USERS_COLLECTION
 from database.connection import get_db
@@ -8,9 +10,23 @@ from services.patient_service import (
     get_all_patients,
     get_patient_by_conversation_id,
     get_patient_by_record_id,
+    update_patient_personal_info,
 )
 
 router = APIRouter(prefix="/api", tags=["Patients"])
+
+
+class PatientUpdateBody(BaseModel):
+    """Editable patient fields (all optional for partial updates)."""
+    name:                  Optional[str] = None
+    age:                   Optional[str] = None
+    gender:                Optional[str] = None
+    contact:               Optional[str] = None
+    address:               Optional[str] = None
+    reason:                Optional[str] = None
+    medicalHistory:        Optional[str] = None
+    emergencyContact:      Optional[str] = None
+    appointmentPreference: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -55,6 +71,43 @@ async def get_my_record(
     if not patient:
         raise HTTPException(status_code=404, detail="Patient record not found.")
     return {"status": "success", "patient": patient}
+
+
+# ---------------------------------------------------------------------------
+# Patient — update their own personal info
+# ---------------------------------------------------------------------------
+@router.patch("/my-record")
+async def update_my_record(
+    body: PatientUpdateBody,
+    current_user=Depends(require_role("patient")),
+    db=Depends(get_db),
+):
+    """
+    Patient self-update: only whitelisted personal fields can be changed.
+    Clinical fields (prescriptions, reports, status, assigned_doctor) are
+    read-only from the patient's perspective.
+    """
+    record_id = current_user.get("patient_record_id")
+    if not record_id:
+        raise HTTPException(status_code=404, detail="No linked patient record found.")
+
+    updates = body.model_dump(exclude_none=True)
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields provided to update.")
+
+    updated = await update_patient_personal_info(
+        db,
+        patient_id=record_id,
+        updates=updates,
+        user_email=current_user.get("email"),
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=400,
+            detail="No valid fields to update, or record not found.",
+        )
+
+    return {"status": "success", "patient": updated}
 
 
 # ---------------------------------------------------------------------------

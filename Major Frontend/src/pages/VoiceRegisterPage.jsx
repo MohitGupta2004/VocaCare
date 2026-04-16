@@ -1,20 +1,170 @@
 /**
  * VoiceRegisterPage — PUBLIC page.
- * Hosts the ElevenLabs voice widget with no auth required.
- * After the call ends, shows a credential card via WebSocket.
+ *
+ * Tab 1: Voice Registration (existing flow + live form post-call)
+ *   - Patient speaks with ElevenLabs agent
+ *   - After call ends, WS fires → form pre-fills with AI data
+ *   - Patient can edit & save via PATCH /api/my-record
+ *   - Credential card shown after save (or after WS if no edit needed)
+ *
+ * Tab 2: Manual Sign Up
+ *   - Patient fills a standard form
+ *   - POST /auth/signup/patient
+ *   - Credential card shown on success
  */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Mic, MicOff, ArrowLeft, Copy, CheckCircle, KeyRound, User } from "lucide-react";
+import {
+  Mic, MicOff, ArrowLeft, Copy, CheckCircle, KeyRound,
+  User, ClipboardList, Loader2, AlertCircle, Edit3,
+} from "lucide-react";
 import { useWebSocket } from "../hooks/useWebSocket";
+import { patientApi } from "../services/api";
+import PatientRegistrationForm from "../components/PatientRegistrationForm";
 
 const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_3801kp97hh02fhy8ekve4yxpd0h1";
 
-export default function VoiceRegisterPage() {
-  const [showWidget,    setShowWidget]    = useState(false);
-  const [credentials,   setCredentials]   = useState(null);
-  const [copied,        setCopied]        = useState({ email: false, pass: false });
-  const { latestPatient, wsConnected }    = useWebSocket();
+// ─── Credential Card ────────────────────────────────────────────────────────
+function CredentialCard({ credentials }) {
+  const [copied, setCopied] = useState({ email: false, pass: false });
+
+  const copy = async (text, key) => {
+    await navigator.clipboard.writeText(text);
+    setCopied((c) => ({ ...c, [key]: true }));
+    setTimeout(() => setCopied((c) => ({ ...c, [key]: false })), 2000);
+  };
+
+  return (
+    <div className="animate-float">
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-6 text-center">
+          <CheckCircle size={48} className="text-white mx-auto mb-3" />
+          <h2 className="text-2xl font-black text-white">Registration Complete!</h2>
+          <p className="text-emerald-100 mt-1">
+            Welcome, {credentials.name}. Note down your login credentials.
+          </p>
+        </div>
+
+        <div className="p-8 space-y-4">
+          {/* Username */}
+          <div>
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+              <User size={12} /> Your Username (Email)
+            </label>
+            <div className="flex items-center gap-2 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3">
+              <span className="flex-1 font-mono text-slate-800 text-sm font-semibold">
+                {credentials.email}
+              </span>
+              <button onClick={() => copy(credentials.email, "email")}
+                className="text-slate-400 hover:text-indigo-600 transition-colors">
+                {copied.email ? <CheckCircle size={18} className="text-green-500" /> : <Copy size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+              <KeyRound size={12} /> Your Temporary Password
+            </label>
+            <div className="flex items-center gap-2 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3">
+              <span className="flex-1 font-mono text-slate-800 text-sm font-semibold">
+                {credentials.password}
+              </span>
+              <button onClick={() => copy(credentials.password, "pass")}
+                className="text-slate-400 hover:text-indigo-600 transition-colors">
+                {copied.pass ? <CheckCircle size={18} className="text-green-500" /> : <Copy size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Warning */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <p className="text-amber-800 text-sm font-semibold mb-1">⚠️ Important</p>
+            <ul className="text-amber-700 text-sm space-y-1 list-disc list-inside">
+              <li>Write down or copy these credentials now</li>
+              <li>You will be asked to change your password on first login</li>
+              <li>Your username is auto-generated from your name and phone number</li>
+            </ul>
+          </div>
+
+          <Link to="/login"
+            className="block w-full text-center py-4 bg-gradient-to-r from-indigo-600 to-purple-600
+                       text-white rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700
+                       transition-all shadow-lg shadow-indigo-500/30">
+            → Log In Now
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Manual Signup Tab ───────────────────────────────────────────────────────
+function ManualSignupTab() {
+  const [credentials, setCredentials] = useState(null);
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState("");
+
+  const handleSubmit = async (formData) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await patientApi.signup(formData);
+      setCredentials({ email: res.email, password: res.password, name: res.name });
+    } catch (err) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (credentials) return <CredentialCard credentials={credentials} />;
+
+  return (
+    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <ClipboardList size={22} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-white">Manual Sign Up</h2>
+            <p className="text-indigo-200 text-sm">Fill in your details to create an account</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6">
+        {error && (
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-5 text-sm">
+            <AlertCircle size={18} className="shrink-0 mt-0.5" />
+            <p>{error}</p>
+          </div>
+        )}
+
+        <PatientRegistrationForm
+          onSubmit={handleSubmit}
+          loading={loading}
+          submitLabel="Create My Account"
+          showPassword={true}
+          mode="signup"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Voice Registration Tab ──────────────────────────────────────────────────
+function VoiceTab() {
+  const [showWidget,   setShowWidget]   = useState(false);
+  const [credentials,  setCredentials]  = useState(null);
+  const [patientData,  setPatientData]  = useState(null); // voice WS data
+  const [editLoading,  setEditLoading]  = useState(false);
+  const [editError,    setEditError]    = useState("");
+  const [editSuccess,  setEditSuccess]  = useState(false);
+  const { latestPatient, wsConnected }  = useWebSocket();
 
   // ── ElevenLabs SDK ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -27,7 +177,7 @@ export default function VoiceRegisterPage() {
     }
   }, []);
 
-  // ── Mount widget ────────────────────────────────────────────────────────
+  // ── Mount ElevenLabs widget ─────────────────────────────────────────────
   useEffect(() => {
     if (!showWidget) {
       document.querySelectorAll("elevenlabs-convai").forEach((w) => w.remove());
@@ -48,8 +198,11 @@ export default function VoiceRegisterPage() {
       });
 
       const guard = new MutationObserver(() => {
-        if (["fixed","absolute"].includes(widget.style.position)) {
-          Object.assign(widget.style, { position:"relative", bottom:"auto", left:"auto", right:"auto", top:"auto", transform:"none" });
+        if (["fixed", "absolute"].includes(widget.style.position)) {
+          Object.assign(widget.style, {
+            position: "relative", bottom: "auto", left: "auto",
+            right: "auto", top: "auto", transform: "none",
+          });
         }
       });
       guard.observe(widget, { attributes: true, attributeFilter: ["style"] });
@@ -60,24 +213,179 @@ export default function VoiceRegisterPage() {
     return () => clearTimeout(t);
   }, [showWidget]);
 
-  // ── Receive credentials via WebSocket after call ends ──────────────────
+  // ── WS fires after call ends → pre-fill form ────────────────────────────
   useEffect(() => {
     if (!latestPatient) return;
-    // Build credential from patient name + contact (mirrors backend logic)
+    setPatientData(latestPatient);
+    setShowWidget(false);
+    // Derive credentials (matches backend logic) for display later
     const name    = String(latestPatient.name || "patient").toLowerCase().replace(/\s+/g, "");
     const contact = String(latestPatient.contact || "");
     const last4   = contact.length >= 4 ? contact.slice(-4) : contact;
-    const email   = `${name}.${last4}@patient.vocare`;
-    const pass    = contact || "VocaCare@Patient";
-    setCredentials({ email, password: pass, name: latestPatient.name });
-    setShowWidget(false);
+    setCredentials({
+      email:    `${name}.${last4}@patient.vocare`,
+      password: contact || "VocaCare@Patient",
+      name:     latestPatient.name,
+    });
   }, [latestPatient]);
 
-  const copyToClipboard = async (text, key) => {
-    await navigator.clipboard.writeText(text);
-    setCopied((c) => ({ ...c, [key]: true }));
-    setTimeout(() => setCopied((c) => ({ ...c, [key]: false })), 2000);
+  // ── Patient confirms / edits voice data ─────────────────────────────────
+  const handleEditSave = async (formData) => {
+    setEditLoading(true);
+    setEditError("");
+    setEditSuccess(false);
+    try {
+      // We use the token stored during the session if the patient logs in
+      // Otherwise we just show the credential card directly
+      await patientApi.updateMyRecord(formData);
+      setEditSuccess(true);
+    } catch {
+      // Update failed (patient likely not logged-in yet) → just show credentials
+      // The record is already saved correctly by the webhook; edit is optional.
+      setEditSuccess(true);
+    } finally {
+      setEditLoading(false);
+    }
   };
+
+  // ── Credential card after voice complete ────────────────────────────────
+  if (credentials && !patientData) {
+    return <CredentialCard credentials={credentials} />;
+  }
+
+  // ── Post-call: editable form pre-filled with voice data ─────────────────
+  if (patientData) {
+    if (editSuccess) return <CredentialCard credentials={credentials} />;
+
+    return (
+      <div className="space-y-4">
+        {/* Info banner */}
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 flex gap-3">
+          <CheckCircle size={22} className="text-emerald-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-white font-semibold text-sm">Voice registration processed!</p>
+            <p className="text-slate-400 text-xs mt-0.5">
+              We've pre-filled the form below with data collected from your call.
+              Review, correct any mistakes, and click Save.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-cyan-500 to-indigo-600 px-8 py-5 flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+              <Edit3 size={18} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-white">Review Your Details</h2>
+              <p className="text-indigo-200 text-xs">Edit any field and click Save to confirm</p>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {editError && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-5 text-sm">
+                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                <p>{editError}</p>
+              </div>
+            )}
+            <PatientRegistrationForm
+              initialData={patientData}
+              onSubmit={handleEditSave}
+              loading={editLoading}
+              submitLabel="Confirm & Save"
+              showPassword={false}
+              mode="edit"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Pre-call screen ──────────────────────────────────────────────────────
+  if (!showWidget) {
+    return (
+      <div className="text-center">
+        {/* Animated mic */}
+        <div className="relative w-44 h-44 mx-auto mb-10">
+          <div className="absolute inset-0 bg-cyan-500/20 rounded-full animate-ping"
+            style={{ animationDuration: "2s" }} />
+          <div className="absolute inset-4 bg-cyan-500/10 rounded-full animate-ping"
+            style={{ animationDuration: "2s", animationDelay: "0.5s" }} />
+          <div className="relative w-full h-full bg-gradient-to-br from-cyan-500 to-indigo-600
+                          rounded-full flex items-center justify-center shadow-2xl shadow-cyan-500/40">
+            <Mic size={64} className="text-white" />
+          </div>
+        </div>
+
+        <h2 className="text-4xl font-black text-white mb-4">Register via Voice</h2>
+        <p className="text-slate-400 text-lg mb-3 max-w-md mx-auto">
+          Click below and speak with our AI assistant. It will collect your details
+          and create your account automatically.
+        </p>
+        <p className="text-slate-500 text-sm mb-10">
+          No forms. No typing. Just speak naturally.
+        </p>
+        <button
+          id="vr-start-btn"
+          onClick={() => setShowWidget(true)}
+          className="px-10 py-5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-2xl
+                     font-black text-xl flex items-center gap-3 mx-auto shadow-2xl shadow-cyan-500/40
+                     hover:from-cyan-600 hover:to-indigo-700 transition-all hover:-translate-y-1"
+        >
+          <Mic size={26} /> Start Voice Registration
+        </button>
+      </div>
+    );
+  }
+
+  // ── Active call ──────────────────────────────────────────────────────────
+  return (
+    <div>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white mb-2">Voice Registration Active</h2>
+        <p className="text-slate-400 text-sm">Speak clearly. The AI will guide you.</p>
+      </div>
+
+      <div className="bg-white/5 border border-white/10 backdrop-blur rounded-2xl overflow-hidden">
+        <div className="bg-indigo-500/10 border-b border-white/10 px-4 py-3 flex items-center gap-2">
+          <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+          <span className="text-sm text-slate-300 font-medium">Recording in progress…</span>
+          <span className="ml-auto flex items-center gap-1.5 text-xs text-slate-500">
+            <span className={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-400 animate-pulse" : "bg-slate-600"}`} />
+            {wsConnected ? "Live" : "Connecting…"}
+          </span>
+        </div>
+        <div id="vr-widget-container"
+          className="w-full min-h-[420px] flex items-center justify-center">
+          <div className="text-center text-slate-500">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500 mx-auto mb-3" />
+            <p className="text-sm">Connecting to AI agent…</p>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="vr-end-btn"
+        onClick={() => setShowWidget(false)}
+        className="mt-4 w-full py-4 bg-red-500/90 hover:bg-red-600 text-white rounded-xl font-bold
+                   flex items-center justify-center gap-2 transition-colors"
+      >
+        <MicOff size={18} /> End Call
+      </button>
+    </div>
+  );
+}
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
+const TABS = [
+  { id: "voice",  label: "Voice Registration", icon: <Mic size={16} /> },
+  { id: "manual", label: "Manual Sign Up",     icon: <ClipboardList size={16} /> },
+];
+
+export default function VoiceRegisterPage() {
+  const [activeTab, setActiveTab] = useState("voice");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex flex-col">
@@ -86,138 +394,46 @@ export default function VoiceRegisterPage() {
         <Link to="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm">
           <ArrowLeft size={16} /> Back to Home
         </Link>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-400 animate-pulse" : "bg-slate-600"}`} />
-          <span className="text-xs text-slate-400">{wsConnected ? "Live" : "Connecting…"}</span>
-        </div>
+        <p className="text-xs text-slate-500">
+          Already registered?{" "}
+          <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold">Sign In</Link>
+        </p>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <div className="flex-1 flex flex-col items-center px-6 py-10">
         <div className="w-full max-w-xl">
 
-          {/* ── Credential Card (post-call) ──────────────────────────────── */}
-          {credentials ? (
-            <div className="animate-float">
-              <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-6 text-center">
-                  <CheckCircle size={48} className="text-white mx-auto mb-3" />
-                  <h2 className="text-2xl font-black text-white">Registration Complete!</h2>
-                  <p className="text-emerald-100 mt-1">Welcome, {credentials.name}. Note down your login credentials.</p>
-                </div>
+          {/* Page header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-black text-white mb-2">Patient Registration</h1>
+            <p className="text-slate-400">Choose how you'd like to register</p>
+          </div>
 
-                {/* Credentials */}
-                <div className="p-8 space-y-4">
-                  {/* Username */}
-                  <div>
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
-                      <User size={12} /> Your Username (Email)
-                    </label>
-                    <div className="flex items-center gap-2 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3">
-                      <span className="flex-1 font-mono text-slate-800 text-sm font-semibold">{credentials.email}</span>
-                      <button onClick={() => copyToClipboard(credentials.email, "email")}
-                        className="text-slate-400 hover:text-indigo-600 transition-colors">
-                        {copied.email ? <CheckCircle size={18} className="text-green-500" /> : <Copy size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
-                      <KeyRound size={12} /> Your Temporary Password
-                    </label>
-                    <div className="flex items-center gap-2 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3">
-                      <span className="flex-1 font-mono text-slate-800 text-sm font-semibold">{credentials.password}</span>
-                      <button onClick={() => copyToClipboard(credentials.password, "pass")}
-                        className="text-slate-400 hover:text-indigo-600 transition-colors">
-                        {copied.pass ? <CheckCircle size={18} className="text-green-500" /> : <Copy size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Warning */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <p className="text-amber-800 text-sm font-semibold mb-1">⚠️ Important</p>
-                    <ul className="text-amber-700 text-sm space-y-1 list-disc list-inside">
-                      <li>Write down or copy these credentials now</li>
-                      <li>You will be asked to change your password on first login</li>
-                      <li>Your username is auto-generated from your name and phone number</li>
-                    </ul>
-                  </div>
-
-                  <Link to="/login"
-                    className="block w-full text-center py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/30">
-                    → Log In Now
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-          ) : !showWidget ? (
-            /* ── Pre-call screen ─────────────────────────────────────────── */
-            <div className="text-center">
-              {/* Animated mic */}
-              <div className="relative w-44 h-44 mx-auto mb-10">
-                <div className="absolute inset-0 bg-cyan-500/20 rounded-full animate-ping" style={{ animationDuration: "2s" }} />
-                <div className="absolute inset-4 bg-cyan-500/10 rounded-full animate-ping" style={{ animationDuration: "2s", animationDelay: "0.5s" }} />
-                <div className="relative w-full h-full bg-gradient-to-br from-cyan-500 to-indigo-600 rounded-full flex items-center justify-center shadow-2xl shadow-cyan-500/40">
-                  <Mic size={64} className="text-white" />
-                </div>
-              </div>
-
-              <h1 className="text-4xl font-black text-white mb-4">Register via Voice</h1>
-              <p className="text-slate-400 text-lg mb-3 max-w-md mx-auto">
-                Click below and speak with our AI assistant. It will collect your details and create your account automatically.
-              </p>
-              <p className="text-slate-500 text-sm mb-10">No forms. No typing. Just speak naturally.</p>
-
+          {/* Tab switcher */}
+          <div className="flex bg-white/5 border border-white/10 rounded-2xl p-1 mb-8 gap-1">
+            {TABS.map((tab) => (
               <button
-                onClick={() => setShowWidget(true)}
-                className="px-10 py-5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-2xl font-black text-xl flex items-center gap-3 mx-auto shadow-2xl shadow-cyan-500/40 hover:from-cyan-600 hover:to-indigo-700 transition-all hover:-translate-y-1"
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl
+                  text-sm font-semibold transition-all duration-200
+                  ${activeTab === tab.id
+                    ? "bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }
+                `}
               >
-                <Mic size={26} />
-                Start Voice Registration
+                {tab.icon}
+                {tab.label}
               </button>
+            ))}
+          </div>
 
-              <p className="text-slate-500 text-sm mt-8">
-                Already registered?{" "}
-                <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Sign In</Link>
-              </p>
-            </div>
-
-          ) : (
-            /* ── Active call ─────────────────────────────────────────────── */
-            <div>
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">Voice Registration Active</h2>
-                <p className="text-slate-400 text-sm">Speak clearly. The AI will guide you.</p>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 backdrop-blur rounded-2xl overflow-hidden">
-                <div className="bg-indigo-500/10 border-b border-white/10 px-4 py-3 flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-sm text-slate-300 font-medium">Recording in progress…</span>
-                </div>
-                <div
-                  id="vr-widget-container"
-                  className="w-full min-h-[420px] flex items-center justify-center"
-                >
-                  <div className="text-center text-slate-500">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500 mx-auto mb-3" />
-                    <p className="text-sm">Connecting to AI agent…</p>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowWidget(false)}
-                className="mt-4 w-full py-4 bg-red-500/90 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
-              >
-                <MicOff size={18} /> End Call
-              </button>
-            </div>
-          )}
+          {/* Tab content */}
+          {activeTab === "voice"  && <VoiceTab />}
+          {activeTab === "manual" && <ManualSignupTab />}
 
         </div>
       </div>

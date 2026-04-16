@@ -1,9 +1,10 @@
-"""Auth routes — login (all roles), doctor self-signup, profile, change-password."""
+"""Auth routes — login (all roles), doctor self-signup, patient self-signup, profile, change-password."""
 import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from typing import Optional
 
 from config.settings import USERS_COLLECTION
 from database.connection import get_db
@@ -14,6 +15,7 @@ from services.auth_service import (
     hash_password,
     verify_password,
 )
+from services.patient_service import save_patient_record
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -22,6 +24,20 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 class ChangePasswordBody(BaseModel):
     old_password: str
     new_password: str
+
+
+class PatientSignupBody(BaseModel):
+    """Manual patient self-registration payload."""
+    name: str
+    age: str
+    gender: str
+    contact: str
+    address: Optional[str] = ""
+    reason: Optional[str] = ""
+    medicalHistory: Optional[str] = ""
+    emergencyContact: Optional[str] = ""
+    appointmentPreference: Optional[str] = ""
+    password: Optional[str] = None   # if omitted → defaults to contact number
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +98,90 @@ async def doctor_signup(body: UserCreate, db=Depends(get_db)):
 
 
 # ---------------------------------------------------------------------------
+# Patient self-registration (manual form — no voice agent required)
+# ---------------------------------------------------------------------------
+@router.post("/signup/patient", status_code=status.HTTP_201_CREATED)
+async def patient_signup(body: PatientSignupBody, db=Depends(get_db)):
+    """
+    Manual patient registration — mirrors the webhook pipeline schema.
+    Creates:
+      1. A patient_registrations document
+      2. A users document with role='patient', first_login=True
+    Returns generated credentials so the UI can display them.
+    """
+    # --- Validate ---
+    if not body.name.strip():
+        raise HTTPException(status_code=400, detail="Name is required.")
+    if not body.contact.strip():
+        raise HTTPException(status_code=400, detail="Contact number is required.")
+    if len(body.contact.strip()) < 10:
+        raise HTTPException(status_code=400, detail="Contact must be at least 10 digits.")
+    if not body.age.strip():
+        raise HTTPException(status_code=400, detail="Age is required.")
+
+    # --- Derive credentials (same formula as webhook) ---
+    contact  = body.contact.strip()
+    name     = body.name.strip().lower().replace(" ", "")
+    last4    = contact[-4:] if len(contact) >= 4 else contact
+    email    = f"{name}.{last4}@patient.vocare"
+    password = (body.password.strip() if body.password and body.password.strip()
+                else contact)
+
+    # --- Duplicate guard ---
+    existing = await db[USERS_COLLECTION].find_one({"email": email})
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"An account for this name + contact already exists. Email: {email}",
+        )
+
+    # --- Build patient record (matches webhook schema) ---
+    patient_record = {
+        "name":                  body.name.strip(),
+        "age":                   body.age.strip(),
+        "gender":                body.gender.strip(),
+        "contact":               contact,
+        "address":               body.address or "",
+        "reason":                body.reason or "",
+        "medicalHistory":        body.medicalHistory or "",
+        "emergencyContact":      body.emergencyContact or "",
+        "appointmentPreference": body.appointmentPreference or "",
+        "conversationId":        None,
+        "transcript":            [],
+        "transcriptSummary":     "",
+        "callDuration":          None,
+        "createdAt":             datetime.utcnow(),
+        "status":                "registered",
+        "registrationMethod":    "manual",   # differentiates from voice
+    }
+
+    # --- Persist patient record ---
+    patient_db_id = await save_patient_record(db, patient_record)
+    logger.info(f"📋 Manual patient record created | _id: {patient_db_id}")
+
+    # --- Create user account ---
+    user_doc = {
+        "email":             email,
+        "hashed_password":   hash_password(password),
+        "full_name":         body.name.strip(),
+        "role":              "patient",
+        "is_active":         True,
+        "first_login":       True,
+        "patient_record_id": patient_db_id,
+        "created_at":        datetime.utcnow(),
+    }
+    await db[USERS_COLLECTION].insert_one(user_doc)
+    logger.info(f"👤 Manual patient account created | email: {email}")
+
+    return {
+        "message":  "Patient account created successfully.",
+        "email":    email,
+        "password": password,
+        "name":     body.name.strip(),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Change password (patient forced first-login reset, anyone can call it)
 # ---------------------------------------------------------------------------
 @router.post("/change-password")
@@ -118,3 +218,4 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         role=current_user["role"],
         specialty=current_user.get("specialty"),
     )
+

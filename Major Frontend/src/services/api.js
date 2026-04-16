@@ -41,11 +41,15 @@ export const authApi = {
 // Patient (own record)
 // ---------------------------------------------------------------------------
 export const patientApi = {
-  myRecord: () => apiFetch("/api/my-record"),
-  stats:    () => apiFetch("/api/stats"),
+  myRecord:       ()      => apiFetch("/api/my-record"),
+  updateMyRecord: (data)  => apiFetch("/api/my-record", { method: "PATCH", body: data }),
+  stats:          ()      => apiFetch("/api/stats"),
   // Keep generic list for legacy compat
-  list:     (limit = 50) => apiFetch(`/api/patients?limit=${limit}`),
+  list:           (limit = 50) => apiFetch(`/api/patients?limit=${limit}`),
+  // Manual patient self-registration (no auth required)
+  signup:         (data)  => apiFetch("/auth/signup/patient", { method: "POST", body: data }),
 };
+
 
 // ---------------------------------------------------------------------------
 // Doctor
